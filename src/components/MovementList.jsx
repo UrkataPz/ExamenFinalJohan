@@ -1,30 +1,16 @@
-import { Deposit } from '../models/Deposit';
-import { Withdrawal } from '../models/Withdrawal';
-import { Transfer } from '../models/Transfer';
-import { Payment } from '../models/Payment';
+import MovementFactory from '../models/MovementFactory';
 import MovementCard from './MovementCard';
 import './MovementList.css';
 
-// TODO: extract creation
-function createMovement(data) {
-  switch (data.type) {
-    case 'deposit':
-      return new Deposit(data);
-    case 'withdrawal':
-      return new Withdrawal(data);
-    case 'transfer':
-      return new Transfer(data);
-    case 'payment':
-      return new Payment(data);
-    default:
-      throw new Error(`Unknown movement type: ${data.type}`);
-  }
-}
-
 function MovementList({ movementsData }) {
-  const movements = movementsData.map(data => createMovement(data));
+    // En vez de crear objetos aquí, delegamos todo a la Factory.
+  // Así quitamos el switch y el acoplamiento de clases concretas.
+  const movements = movementsData.map(data => MovementFactory.create(data.type, data));
 
+  
+  // La UI ahora solo usa la interfaz común (getNetAmount, etc.)
   const totalBalance = movements.reduce((sum, m) => sum + m.getNetAmount(), 0);
+
 
   const formatBalance = (amount) => {
     const isPositive = amount >= 0;
