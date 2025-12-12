@@ -1,16 +1,65 @@
-# React + Vite
+                                            Refactorización con Factory Method
+                                                    1. Justificación técnica
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+La refactorización realizada elimina el acoplamiento directo entre la interfaz de usuario (UI) y las clases concretas del dominio (Deposit, Withdrawal, Transfer, Payment). Antes del cambio, la UI:
 
-Currently, two official plugins are available:
+- Importaba clases específicas del dominio.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Contenía un switch que decidía qué clase instanciar.
 
-## React Compiler
+- Usaba new directamente, obligándola a conocer detalles internos de cada movimiento.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Ese diseño mezclaba responsabilidades y volvía la UI sensible a cualquier cambio del dominio. Si se agregaba un nuevo tipo de movimiento, la UI debía modificarse, rompiendo el Principio Abierto/Cerrado (OCP) y aumentando el acoplamiento.
 
-## Expanding the ESLint configuration
+- Con la introducción del Factory Method, la creación de objetos se centraliza en un único componente (MovementFactory). La UI deja de conocer clases concretas y trabaja exclusivamente con la abstracción (Movement).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Con esto:
+- Reduce acoplamiento
+
+- La UI ya no depende de detalles internos ni de clases específicas; simplemente solicita un movimiento a través de la fábrica. Si el dominio cambia, la UI permanece intacta.
+
+- Incrementa cohesión
+
+- Ahora la UI muestra datos y recibe objetos ya construidos.
+
+- La fábrica decide qué tipo de movimiento instanciar.
+
+
+
+                                2. Pasos para agregar un nuevo tipo sin tocar la UI (OCP)
+
+El sistema quedó preparado para extenderse sin modificar la UI. Para agregar un nuevo movimiento, por ejemplo Fee, los pasos son:
+
+1. Crear la clase nueva en el dominio
+
+ models/Fee.js
+
+2. Registrar el nuevo tipo en la fábrica
+
+En MovementFactory.js, importar la nueva clase e incluir un nuevo case en el switch:
+
+import { Fee } from './Fee';
+
+case 'fee':
+  return new Fee(data);
+
+  3.  Agregar datos en movements.js
+
+Para verlo reflejado en pantalla, basta con agregar un objeto en la lista con type: 'fee'.
+
+
+                                                        Instrucciones de ejecución
+
+1. Instalar dependencias
+
+npm install
+
+
+2. Levantar el servidor de desarrollo
+
+npm run dev
+
+
+3. Abrir la aplicación en el navegador
+
+generalmente http://localhost:5173/
